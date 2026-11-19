@@ -1,18 +1,40 @@
-import type { IDataObject, IExecuteFunctions, IHttpRequestMethods, INodeExecutionData, INodeType, INodeTypeDescription } from "n8n-workflow";
-import { NodeApiError } from "n8n-workflow";
+import type { IDataObject, IExecuteFunctions, JsonObject, IHttpRequestMethods, INodeExecutionData, INodeType, INodeTypeDescription } from "n8n-workflow";
+import { NodeApiError, NodeConnectionTypes } from "n8n-workflow";
+
+// Passello answers errors as {"error": code}. These are the codes a workflow can hit.
+const MESSAGES: Record<string, string> = {
+	"scan.passNotFound": "No card with this code in this business.",
+	"scan.notReady": "The card is not full yet, so the reward cannot be redeemed.",
+	"scan.full": "The card is already full. Redeem the reward first.",
+	"scan.dailyCap": "This card already reached the daily stamp limit of this location.",
+	"api.locationRequired": "This business has more than one location. Fill in Location ID (use the Location > Get Many operation).",
+	"api.locationNotFound": "This Location ID does not exist in this business.",
+	"api.unauthorized": "The Passello API key is wrong or was revoked.",
+};
+
+function passelloCode(error: unknown): string | undefined {
+	let text = "";
+	try {
+		text = JSON.stringify(error, Object.getOwnPropertyNames(error as object));
+	} catch {
+		text = String(error);
+	}
+	return /\\?"error\\?"\s*:\s*\\?"([a-zA-Z]+\.[a-zA-Z]+)/.exec(text)?.[1];
+}
 
 export class Passello implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: "Passello",
 		name: "passello",
-		icon: "file:passello.png",
+		icon: { light: "file:../../icons/passello.svg", dark: "file:../../icons/passello.dark.svg" },
 		group: ["transform"],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: "Add stamps, redeem rewards and read numbers from Passello loyalty cards",
 		defaults: { name: "Passello" },
-		inputs: ["main"],
-		outputs: ["main"],
+		usableAsTool: true,
+		inputs: [NodeConnectionTypes.Main],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [{ name: "passelloApi", required: true }],
 		properties: [
 			{
@@ -140,11 +162,13 @@ export class Passello implements INodeType {
 				const rows = resource === "location" ? (res.data as IDataObject[]) : [res];
 				for (const r of rows) out.push({ json: r, pairedItem: { item: i } });
 			} catch (error) {
+				const code = passelloCode(error);
+				const message = code ? (MESSAGES[code] ?? code) : undefined;
 				if (this.continueOnFail()) {
-					out.push({ json: { error: (error as Error).message }, pairedItem: { item: i } });
+					out.push({ json: { error: message ?? (error as Error).message, code }, pairedItem: { item: i } });
 					continue;
 				}
-				throw new NodeApiError(this.getNode(), error as never);
+				throw new NodeApiError(this.getNode(), error as JsonObject, message ? { message, itemIndex: i } : { itemIndex: i });
 			}
 		}
 		return [out];

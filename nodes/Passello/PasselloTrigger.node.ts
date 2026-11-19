@@ -1,4 +1,5 @@
-import type { IDataObject, IHookFunctions, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData } from "n8n-workflow";
+import { NodeApiError, NodeConnectionTypes } from "n8n-workflow";
+import type { IDataObject, IHookFunctions, JsonObject, INodeType, INodeTypeDescription, IWebhookFunctions, IWebhookResponseData } from "n8n-workflow";
 import { createHmac, timingSafeEqual } from "crypto";
 
 const EVENTS = [
@@ -18,14 +19,14 @@ export class PasselloTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: "Passello Trigger",
 		name: "passelloTrigger",
-		icon: "file:passello.png",
+		icon: { light: "file:../../icons/passello.svg", dark: "file:../../icons/passello.dark.svg" },
 		group: ["trigger"],
 		version: 1,
 		subtitle: '={{$parameter["events"].join(", ")}}',
 		description: "Starts the workflow when something happens in Passello",
 		defaults: { name: "Passello Trigger" },
 		inputs: [],
-		outputs: ["main"],
+		outputs: [NodeConnectionTypes.Main],
 		credentials: [{ name: "passelloApi", required: true }],
 		webhooks: [{ name: "default", httpMethod: "POST", responseMode: "onReceived", path: "webhook" }],
 		properties: [
@@ -67,8 +68,10 @@ export class PasselloTrigger implements INodeType {
 				const base = String(creds.baseUrl).replace(/\/$/, "");
 				try {
 					await this.helpers.httpRequestWithAuthentication.call(this, "passelloApi", { method: "DELETE", url: `${base}/hooks/${data.hookId}`, json: true });
-				} catch {
-					// Ya no existia: nada que hacer.
+				} catch (error) {
+					// A hook that no longer exists (404) is fine; anything else must surface.
+					const status = (error as { httpCode?: string; response?: { status?: number } }).httpCode ?? (error as { response?: { status?: number } }).response?.status;
+					if (String(status) !== "404") throw new NodeApiError(this.getNode(), error as JsonObject);
 				}
 				delete data.hookId;
 				delete data.secret;

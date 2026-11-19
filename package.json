@@ -1,48 +1,55 @@
 {
-  "name": "@passello/n8n-nodes-passello",
-  "version": "0.1.0",
-  "description": "n8n nodes for Passello: loyalty cards in Apple Wallet and Google Wallet. Add stamps, redeem rewards and react to what happens at the counter.",
-  "keywords": [
-    "n8n-community-node-package",
-    "passello",
-    "loyalty",
-    "wallet",
-    "stamps"
-  ],
-  "license": "MIT",
-  "homepage": "https://passellocard.com/developers",
-  "author": {
-    "name": "Passello",
-    "email": "support@passellocard.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mobincodeHQ/n8n-nodes-passello.git"
-  },
-  "main": "index.js",
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsc && cp nodes/Passello/passello.png dist/nodes/Passello/",
-    "lint": "tsc --noEmit"
-  },
-  "n8n": {
-    "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/PasselloApi.credentials.js"
-    ],
-    "nodes": [
-      "dist/nodes/Passello/Passello.node.js",
-      "dist/nodes/Passello/PasselloTrigger.node.js"
-    ]
-  },
-  "devDependencies": {
-    "n8n-workflow": "2.16.0",
-    "typescript": "5.9.3",
-    "@types/node": "24.10.1"
-  },
-  "peerDependencies": {
-    "n8n-workflow": "*"
-  }
+	"name": "@passello/n8n-nodes-passello",
+	"version": "0.2.0",
+	"description": "n8n nodes for Passello: loyalty cards in Apple Wallet and Google Wallet. Add stamps, redeem rewards and react to what happens at the counter.",
+	"keywords": [
+		"n8n-community-node-package",
+		"passello",
+		"loyalty",
+		"wallet",
+		"stamps"
+	],
+	"license": "MIT",
+	"homepage": "https://github.com/mobincodeHQ/n8n-nodes-passello#readme",
+	"author": {
+		"name": "Passello",
+		"email": "support@passellocard.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mobincodeHQ/n8n-nodes-passello.git"
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease"
+	},
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"credentials": [
+			"dist/credentials/PasselloApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/Passello/Passello.node.js",
+			"dist/nodes/Passello/PasselloTrigger.node.js"
+		],
+		"strict": true
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "0.57.4",
+		"eslint": "9.39.4",
+		"prettier": "3.8.3",
+		"release-it": "20.2.0",
+		"typescript": "5.9.3"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	}
 }

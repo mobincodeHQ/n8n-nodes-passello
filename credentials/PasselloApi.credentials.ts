@@ -1,9 +1,10 @@
-import type { IAuthenticateGeneric, ICredentialTestRequest, ICredentialType, INodeProperties } from "n8n-workflow";
+import type { IAuthenticateGeneric, Icon, ICredentialTestRequest, ICredentialType, INodeProperties } from "n8n-workflow";
 
 export class PasselloApi implements ICredentialType {
 	name = "passelloApi";
 	displayName = "Passello API";
 	documentationUrl = "https://passellocard.com/developers";
+	icon: Icon = { light: "file:../icons/passello.svg", dark: "file:../icons/passello.dark.svg" };
 	properties: INodeProperties[] = [
 		{
 			displayName: "API Key",
