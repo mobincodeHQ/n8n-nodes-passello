@@ -1,6 +1,6 @@
 {
 	"name": "@passello/n8n-nodes-passello",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "n8n nodes for Passello: loyalty cards in Apple Wallet and Google Wallet. Add stamps, redeem rewards and react to what happens at the counter.",
 	"keywords": [
 		"n8n-community-node-package",
